@@ -140,13 +140,15 @@ coreos:
         ExecStart=/opt/bin/kube-scheduler --master=127.0.0.1:8080
         Restart=always
         RestartSec=10
-   - name: kube-proxy.service
+    - name: kube-proxy.service
       command: start
       content: |
         [Unit]
         Description=Kubernetes Proxy
         Documentation=https://github.com/kubernetes/kubernetes
+        Requires=kube-apiserver.service
         Requires=setup-network-environment.service
+        After=kube-apiserver.service
         After=setup-network-environment.service
         [Service]
         ExecStartPre=/usr/bin/curl -L -o /opt/bin/kube-proxy -z /opt/bin/kube-proxy https://storage.googleapis.com/kubernetes-release/release/v1.2.3/bin/linux/amd64/kube-proxy
@@ -157,14 +159,16 @@ coreos:
         --logtostderr=true
         Restart=always
         RestartSec=10
-  - name: kube-kubelet.service
+    - name: kube-kubelet.service
       command: start
       content: |
         [Unit]
         Description=Kubernetes Kubelet
         Documentation=https://github.com/kubernetes/kubernetes
+        Requires=kube-apiserver.service
         Requires=setup-network-environment.service
         After=setup-network-environment.service
+        After=kube-apiserver.service
         [Service]
         EnvironmentFile=/etc/network-environment
         ExecStartPre=/usr/bin/curl -L -o /opt/bin/kubelet -z /opt/bin/kubelet https://storage.googleapis.com/kubernetes-release/release/v1.2.3/bin/linux/amd64/kubelet
