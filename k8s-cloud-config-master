@@ -16,6 +16,15 @@ write-files:
           sleep 1 && echo .;
         done;
       exit $?
+  - path: /opt/bin/wupiao2
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      # [w]ait [u]ntil [p]ort [i]s [a]ctually [o]pen
+      [ -n "$1" ] && [ -n "$2" ] && while ! curl --output /dev/null \
+      --silent --head --fail \
+      http://${1}:${2}; do sleep 1 && echo -n .; done;
+      exit $?
 hostname: master
 ssh_authorized_keys:
   - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDeGxvY1KP3mHJb9Uu8ZVKXlpfX7WcoehcX//sHNdJW5Src+83PWD04Ss4BG9RDj26dUM+V/20AemV8m7hjQAMxVvdL/+1I32RYNTJ13gJcCUJts8ExecOZHLvJZu41sunB8+G7vycSXDYF/bf/L4vlaJUwQ7I5PjXnRQpQxNT6RGOZkgA/rd5Zg3Vm6JMXkDTgaUVV00kHtV8xJC43MMwTE2j4xzujxnKkyhlL2Vc8XvAefAoBS9f9Ri8lBubDknRpR54gW7MtwGNHetuazyV34vQV/KzXtZBxiIgmd/PVrpdQNowrwBYHV02DXSHRkDuKhTQVBoeu1pqs2vYaoxAn xiangdong.wu@duitang.com"
@@ -153,7 +162,7 @@ coreos:
         [Service]
         ExecStartPre=/usr/bin/curl -L -o /opt/bin/kube-proxy -z /opt/bin/kube-proxy https://storage.googleapis.com/kubernetes-release/release/v1.2.3/bin/linux/amd64/kube-proxy
         ExecStartPre=/usr/bin/chmod +x /opt/bin/kube-proxy
-        ExecStartPre=/opt/bin/wupiao 127.0.0.1 8080
+        ExecStartPre=/opt/bin/wupiao2 127.0.0.1 8080
         ExecStart=/opt/bin/kube-proxy \
         --master=127.0.0.1:8080 \
         --logtostderr=true
@@ -174,7 +183,7 @@ coreos:
         ExecStartPre=/usr/bin/curl -L -o /opt/bin/kubelet -z /opt/bin/kubelet https://storage.googleapis.com/kubernetes-release/release/v1.2.3/bin/linux/amd64/kubelet
         ExecStartPre=/usr/bin/chmod +x /opt/bin/kubelet
         # wait for kubernetes master to be up and ready
-        ExecStartPre=/opt/bin/wupiao 127.0.0.1 8080
+        ExecStartPre=/opt/bin/wupiao2 127.0.0.1 8080
         ExecStart=/opt/bin/kubelet \
         --address=0.0.0.0 \
         --port=10250 \
